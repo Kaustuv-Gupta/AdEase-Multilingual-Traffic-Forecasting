@@ -7,6 +7,8 @@ AdEase is an ad-infrastructure company focused on maximizing clicks at minimum c
 Contents
 --------
 - `adease-multilingual-traffic-forecasting.ipynb` — primary analysis notebook with EDA, feature engineering, model training (ARIMA, SARIMA, SARIMAX, Prophet), grid search, and recommendations.
+- `split_data_file.py` — utility script to split large CSV files into manageable chunks and compress each to individual zip files.
+- `merge_data_files.py` — **prerequisite utility** to extract and merge CSV files from zip archives into a single consolidated dataset.
 - `data/train_1.csv` — page-level daily views (550 days).
 - `data/Exog_Campaign_eng.csv` — exogenous campaign indicator time series (binary).
 
@@ -30,7 +32,7 @@ python -m venv .venv
 2. Install core dependencies (recommended):
 
 ```powershell
-pip install numpy pandas matplotlib seaborn regex gdown langcodes iso639-lang plotly statsmodels scikit-learn prophet cmdstanpy joblib
+pip install numpy pandas matplotlib seaborn regex gdown langcodes iso639-lang plotly statsmodels scikit-learn prophet cmdstanpy joblib zipfile os glob pathlib
 ```
 
 Note: Installing `prophet` may require a working C++ toolchain or `cmdstanpy` backend. If you encounter issues on Windows, consider using Anaconda/Miniconda and installing `prophet` there.
@@ -42,16 +44,62 @@ pip install jupyterlab
 jupyter lab
 ```
 
-Open `adease-multilingual-traffic-forecasting.ipynb` and run the notebook top-to-bottom. The notebook contains setup cells to install packages and helper functions.
+**Prerequisites: Merge Data Files**
+
+Before running the main notebook, you must run the merge utility to consolidate your dataset:
+
+```powershell
+python merge_data_files.py
+```
+
+This will extract all split CSV chunks from zip files and merge them into a single `train.csv` file. The merged file is required for the notebook analysis.
+
+---
+
+Then open `adease-multilingual-traffic-forecasting.ipynb` and run the notebook top-to-bottom. The notebook contains setup cells to install packages and helper functions.
 
 Usage and Reproducibility
 ------------------------
-- Data: place `train_1.csv` and `Exog_Campaign_eng.csv` inside the `data/` folder (already present in this repository).
-- The notebook loads data using `pd.read_csv('./data/train_1.csv')` and `pd.read_csv('./data/Exog_Campaign_eng.csv')`.
+
+### Step 1: Prepare Merged Data (Required)
+
+Run the merge utility to consolidate all data files:
+
+```powershell
+python merge_data_files.py
+```
+
+**Parameters** (editable in `merge_data_files.py`):
+- `input_dir` — Directory containing zip/CSV files (default: `./data`)
+- `output_file` — Output filename (default: `train.csv`)
+- `base_name` — Filter for specific file prefix (optional)
+- `cleanup` — Remove intermediate files after merge (default: `False`)
+
+This generates `data/train.csv` with all rows consolidated and headers preserved.
+
+### Step 2: Run the Analysis Notebook
+
+- Place `Exog_Campaign_eng.csv` inside the `data/` folder.
+- The notebook loads data using `pd.read_csv('./data/train.csv')` and `pd.read_csv('./data/Exog_Campaign_eng.csv')`.
 - To reproduce the experiments:
 	- Run the preprocessing and EDA sections to validate data parsing and missing-value handling.
 	- Configure model hyperparameters in the grid-search cells (`p_values`, `d_values`, `q_values`, etc.).
 	- Use the `predict_pipeline` function to run ARIMA/SARIMA/SARIMAX/Prophet experiments and evaluate with MSE/MAE/MAPE.
+
+### Optional: Split Large Data Files
+
+If you need to split a large CSV into chunks:
+
+```powershell
+python split_data_file.py
+```
+
+**Parameters** (editable in `split_data_file.py`):
+- `csv_path` — Input CSV file (default: `./data/train_1.csv`)
+- `chunk_size` — Rows per chunk (default: `50000`)
+- `base_name` — Custom base filename (default: auto-derived)
+
+This creates individual zip files for each chunk (e.g., `train_1_part_0.zip`, `train_1_part_1.zip`, ...).
 
 Results (summary)
 -----------------
