@@ -1,4 +1,4 @@
-# AdEase — Multilingual Traffic Forecasting
+# AdEase - Multilingual Traffic Forecasting
 
 Overview
 --------
@@ -11,6 +11,7 @@ Contents
 - `merge_data_files.py` — **prerequisite utility** to extract and merge CSV files from zip archives into a single consolidated dataset.
 - `data/train_1.csv` — page-level daily views (550 days).
 - `data/Exog_Campaign_eng.csv` — exogenous campaign indicator time series (binary).
+- `requirements.txt` — package requirements.
 
 Key Highlights
 --------------
@@ -32,7 +33,7 @@ python -m venv .venv
 2. Install core dependencies (recommended):
 
 ```powershell
-pip install numpy pandas matplotlib seaborn regex gdown langcodes iso639-lang plotly statsmodels scikit-learn prophet cmdstanpy joblib zipfile os glob pathlib
+pip install -r requirements.txt
 ```
 
 Note: Installing `prophet` may require a working C++ toolchain or `cmdstanpy` backend. If you encounter issues on Windows, consider using Anaconda/Miniconda and installing `prophet` there.
